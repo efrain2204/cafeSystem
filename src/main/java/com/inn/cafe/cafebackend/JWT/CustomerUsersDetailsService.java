@@ -26,6 +26,7 @@ public class CustomerUsersDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("Loading UserDetails for {}", username);
         userDetail = userDao.findByEmailId(username);
+        log.info("efra: ", userDetail);
         if(!Objects.isNull(userDetail)){
             return new org.springframework.security.core.userdetails.User(userDetail.getEmail(),userDetail.getPassword(),new ArrayList<>());
         }else {

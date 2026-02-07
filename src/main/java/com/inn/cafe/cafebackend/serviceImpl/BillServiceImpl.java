@@ -145,7 +145,7 @@ public class BillServiceImpl implements BillService {
             Bill bill = new Bill();
             bill.setUui((String) requestMap.get("uuid"));
             bill.setName((String) requestMap.get("name"));
-            bill.setContactNumber((String) requestMap.get("email"));
+            bill.setEmail((String) requestMap.get("email"));
             bill.setContactNumber((String) requestMap.get("contactNumber"));
             bill.setPaymentMethod((String) requestMap.get("paymentMethod"));
             bill.setTotal(Integer.parseInt((String) requestMap.get("totalAmount")));

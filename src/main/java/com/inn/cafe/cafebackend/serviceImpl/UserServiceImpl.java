@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     JwtUtil jwtUtil;
     JwtFilter jwtFilter;
     EmailUtils emailUtils;
+    PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(
             UserDao userDao,
@@ -39,23 +41,27 @@ public class UserServiceImpl implements UserService {
             CustomerUsersDetailsService customerUsersDetailsService,
             JwtUtil jwtUtil,
             JwtFilter jwtFilter,
-            EmailUtils emailUtils) {
+            EmailUtils emailUtils,PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
         this.authenticationManager = authenticationManager;
         this.customerUsersDetailsService = customerUsersDetailsService;
         this.jwtUtil = jwtUtil;
         this.jwtFilter = jwtFilter;
         this.emailUtils = emailUtils;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public ResponseEntity<String> signUp(Map<String, String> requestMap) {
-        log.info("UserServiceImpl singUp {}", requestMap);
         try {
             if (validateSignUpMap(requestMap)) {
                 User user = userDao.findByEmailId(requestMap.get("email"));
                 if (Objects.isNull(user)) {
-                    userDao.save(getUserFromMap(requestMap));
+                    User newUser = getUserFromMap(requestMap);
+                    String passwordPlana = newUser.getPassword();
+                    newUser.setPassword(passwordEncoder.encode(passwordPlana));
+
+                    userDao.save(newUser);
                     return CafeUtils.getResponseEntity("Successfully Registered", HttpStatus.OK);
                 } else {
                     return CafeUtils.getResponseEntity("Email already exists", HttpStatus.BAD_REQUEST);
@@ -105,7 +111,7 @@ public class UserServiceImpl implements UserService {
                     );
                 }
             } else {
-                return new ResponseEntity<String>("{\nessage:\":\"" + "Wait for admin approval." + "\"}", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("{\nmessage:\":\"" + "Wait for admin approval." + "\"}", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
